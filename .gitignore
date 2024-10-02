@@ -1,3 +1,7 @@
 # secrets
+.env
 settings.py
+
+# db
 db.sqlite3
+

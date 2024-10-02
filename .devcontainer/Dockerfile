@@ -42,7 +42,7 @@ RUN install -m 0755 -d /etc/apt/keyrings
 RUN apt update
 
 # ==========================
-# Install packages required to compile stuff...
+# Install packages required to compile items...
 # ==========================
 RUN apt install -y libc6
 RUN apt install -y git
