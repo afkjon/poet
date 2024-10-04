@@ -1,7 +1,14 @@
+node_modules/
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+
+# mypy 
+.mypy_cache/
+
 # secrets
 .env
 settings.py
-
-# db
-db.sqlite3
-

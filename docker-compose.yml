@@ -1,0 +1,30 @@
+volumes:
+  node_modules:
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    tty: true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=1
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - node_modules:/app/node_modules
+    tty: true
+    ports:
+      - "5173:5173"
+    networks:
+      default:
+        aliases:
+          - frontend.poet.test

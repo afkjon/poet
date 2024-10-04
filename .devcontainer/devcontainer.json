@@ -19,6 +19,9 @@
 		"ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {},
 		"ghcr.io/hspaans/devcontainer-features/django-upgrade:1": {
 			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest"
 		}
 	}
 

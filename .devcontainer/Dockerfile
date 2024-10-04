@@ -83,6 +83,12 @@ RUN echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] http
 RUN apt update && apt install hcp -y
 
 # ==========================
+# Install python tools
+# ==========================
+# Install Django
+RUN python -m pip install Django==5.1.1
+
+# ==========================
 # Setup a non-root execution user...
 # ==========================
 ARG USERNAME=guardian
