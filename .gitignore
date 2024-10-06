@@ -5,6 +5,7 @@ node_modules/
 __pycache__
 db.sqlite3
 media
+.venv
 
 # mypy 
 .mypy_cache/
@@ -12,3 +13,4 @@ media
 # secrets
 .env
 settings.py
+

@@ -89,6 +89,11 @@ RUN apt update && apt install hcp -y
 RUN python -m pip install Django==5.1.1
 
 # ==========================
+# Install TypeScript tools
+# ==========================
+RUN npm install vite
+
+# ==========================
 # Setup a non-root execution user...
 # ==========================
 ARG USERNAME=guardian
