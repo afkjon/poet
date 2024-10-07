@@ -1,72 +1,57 @@
-import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useFirebase } from '../providers/FirebaseProvider';
-import { collection, getDocs, onSnapshot, addDoc } from 'firebase/firestore';
-import { z } from 'zod';
-
-const CardSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  description: z.string(),
-});
-
-const ColumnSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  cards: z.array(CardSchema),
-});
-
-const BoardSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  columns: z.array(ColumnSchema),
-});
-
-type Board = z.infer<typeof BoardSchema>;
-type Column = z.infer<typeof ColumnSchema>;
-//type Card = z.infer<typeof CardSchema>;
-
+import React, { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useFirebase } from '../providers/FirebaseProvider'
+import { collection, getDocs, onSnapshot, addDoc } from 'firebase/firestore'
+import { Board, Column } from '../types/board'
+//import useBoardStore from '../stores/boardStore';
 
 const BoardList: React.FC = () => {
-  const [boardName, setBoardName] = useState('');
-  const queryClient = useQueryClient();
-  const { db } = useFirebase();
-  const { data: boards, isLoading, error } = useQuery<Board[], Error>({
+  //const { localboards, addLocalBoard } = useBoardStore();
+  const [boardName, setBoardName] = useState('')
+  const queryClient = useQueryClient()
+  const { db } = useFirebase()
+
+  const {
+    data: boards,
+    isLoading,
+    error,
+  } = useQuery<Board[], Error>({
     queryKey: ['boards'],
     queryFn: async () => {
-      const boardsCollection = collection(db, 'boards');
-      const snapshot = await getDocs(boardsCollection);
+      const boardsCollection = collection(db, 'boards')
+      const snapshot = await getDocs(boardsCollection)
       return snapshot.docs.map<Board>((doc) => ({
-        id: doc.id, 
+        id: doc.id,
         name: doc.data().name,
         columns: doc.data().columns || [],
-      }));
+      }))
     },
     refetchInterval: false,
     onSuccess: () => {
       // Setup real-time listener
       const unsubscribe = onSnapshot(collection(db, 'boards'), (snapshot) => {
         const updatedBoards = snapshot.docs.map((doc) => ({
-          id: doc.id, 
+          id: doc.id,
           name: doc.data().name,
           columns: doc.data().columns || [],
-        }));
-        queryClient.setQueryData(['boards'], updatedBoards);
-      });
-      return () => unsubscribe();
+        }))
+        queryClient.setQueryData(['boards'], updatedBoards)
+      })
+      return () => unsubscribe()
     },
-  });
+  })
 
   const createBoard = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (boardName.trim() === '') return;
-    const boardCollection = collection(db, 'boards');
-    addDoc(boardCollection, { name: boardName });
-    setBoardName('');
-  };
+    e.preventDefault()
+    if (boardName.trim() === '') return
+    const boardCollection = collection(db, 'boards')
+    addDoc(boardCollection, { name: boardName })
+    //addLocalBoard({ id: '', name: boardName, columns: [] });
+    setBoardName('')
+  }
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !boards) return <div>Error loading board</div>;
+  if (isLoading) return <div>Loading...</div>
+  if (error || !boards) return <div>Error loading board</div>
 
   return (
     <div className="flex flex-col h-screen">
@@ -93,7 +78,10 @@ const BoardList: React.FC = () => {
       <div className="flex-grow overflow-x-auto p-4">
         <div className="flex space-x-4">
           {boards?.map((board: Board) => (
-            <div key={board.id} className="border-2 border-gray-300 flex-none w-72 rounded-md p-4">
+            <div
+              key={board.id}
+              className="border-2 border-gray-300 flex-none w-72 rounded-md p-4"
+            >
               <h2 className="text-xl font-semibold mb-4">{board.name}</h2>
               <div className="space-y-4">
                 {board.columns.map((column: Column) => (
@@ -117,7 +105,7 @@ const BoardList: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BoardList;
+export default BoardList
