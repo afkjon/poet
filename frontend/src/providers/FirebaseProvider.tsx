@@ -1,11 +1,12 @@
-import React, { createContext, useContext, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react'
 import { initializeApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'
 //import { getAnalytics } from "firebase/analytics";
 
 // Define the type for the Firebase context
 interface FirebaseContextType {
-  db: Firestore
+  db: Firestore | null
+  error: Error | null
 }
 
 // Provider component
@@ -44,10 +45,22 @@ export const useFirebase = () => {
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   children,
 }) => {
-  const db = getFirestore(app)
+  const [db, setDb] = useState<Firestore | null>(null)
+  const [error, setError] = useState<Error | null>(null)
 
+  // Initialize Firebase
+  useEffect(() => {
+    try {
+      const dbInstance = getFirestore(app)
+      setDb(dbInstance)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to initialize Firestore'))
+    }
+  }, [])
+
+  // Provide the Firebase context
   return (
-    <FirebaseContext.Provider value={{ db }}>
+    <FirebaseContext.Provider value={{ db, error }}>
       {children}
     </FirebaseContext.Provider>
   )
