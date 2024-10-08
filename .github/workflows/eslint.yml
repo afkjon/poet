@@ -1,0 +1,29 @@
+name: Run ESLint on Frontend
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'frontend/**'
+    branches: [ main ]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with: 
+        node-version: '20' 
+    - name: Install dependencies
+      run: npm ci
+    - name: Run ESLint
+      run: npx eslint .
+

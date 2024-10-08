@@ -5,8 +5,7 @@ import { getFirestore, Firestore } from 'firebase/firestore'
 
 // Define the type for the Firebase context
 interface FirebaseContextType {
-  db: Firestore | null
-  error: Error | null
+  db: Firestore
 }
 
 // Provider component
@@ -45,22 +44,11 @@ export const useFirebase = () => {
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   children,
 }) => {
-  const [db, setDb] = useState<Firestore | null>(null)
-  const [error, setError] = useState<Error | null>(null)
-
-  // Initialize Firebase
-  useEffect(() => {
-    try {
-      const dbInstance = getFirestore(app)
-      setDb(dbInstance)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to initialize Firestore'))
-    }
-  }, [])
+  const db = getFirestore(app)
 
   // Provide the Firebase context
   return (
-    <FirebaseContext.Provider value={{ db, error }}>
+    <FirebaseContext.Provider value={{ db }}>
       {children}
     </FirebaseContext.Provider>
   )
