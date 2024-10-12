@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+from authentication.models import User
 
 class Board(models.Model):
     name = models.CharField(max_length=100)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
 
 class Column(models.Model):
     name = models.CharField(max_length=100)
@@ -15,4 +15,4 @@ class Card(models.Model):
     description = models.TextField(blank=True)
     column = models.ForeignKey(Column, related_name='cards', on_delete=models.CASCADE)
     order = models.IntegerField()
-    assigned_to = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    assigned_to = models.ForeignKey('authentication.User', null=True, blank=True, on_delete=models.SET_NULL)

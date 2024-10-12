@@ -5,7 +5,6 @@ import { collection, getDocs, onSnapshot, addDoc } from 'firebase/firestore'
 import { type Document } from '../types/document'
 import { Link } from 'react-router-dom'
 
-// TODO: Add a search bar to the document list
 const DocumentList: React.FC = () => {
   const [documentName, setDocumentName] = useState('')
   const queryClient = useQueryClient()

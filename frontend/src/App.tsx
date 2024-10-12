@@ -1,3 +1,4 @@
+import React from 'react'
 import { FirebaseProvider } from './providers/FirebaseProvider'
 import './App.css'
 import BoardList from './components/BoardList'
@@ -14,6 +15,8 @@ import {
 } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
+import LoginPage from './components/LoginPage'
+import RegisterPage from './components/RegisterPage'
 // Main layout for the app
 const Layout = () => {
   return (
@@ -29,7 +32,7 @@ const Layout = () => {
 }
 
 // Main App component
-function App() {
+export const App: React.FC = () => {
   const queryProvider = new QueryClient()
 
   return (
@@ -42,7 +45,9 @@ function App() {
               <Route path="/boards" element={<BoardList />} />
               <Route path="/documents" element={<DocumentList />} />
               <Route path="/documents/:id" element={<DocumentDetails />} />
-              <Route path="/blog" element={<BoardList />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="*" element={<div>Not found</div>} />
             </Route>
           </Routes>
         </Router>

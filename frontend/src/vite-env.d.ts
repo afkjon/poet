@@ -9,5 +9,6 @@ declare namespace NodeJS {
     readonly FIREBASE_MESSAGING_SENDER_ID: string
     readonly FIREBASE_APP_ID: string
     readonly FIREBASE_MEASUREMENT_ID: string
+    readonly DJANGO_API_URL: string
   }
 }

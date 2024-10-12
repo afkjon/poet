@@ -84,25 +84,20 @@ const DocumentDetails: React.FC = () => {
   if (error || !document) return <div>Error loading document</div>
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col h-screen">
       {isEditMode ? (
-        <div className="p-4">
+        <div className="flex-grow p-4">
           {/* Tiptap Editor */}
           <EditorContent
             editor={editor}
             onBlur={saveDocument}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       ) : (
-        <div className="p-4">
-          <div className="flex flex-row justify-between">
-            <p className="text-gray-500 text-sm ">
+        <div className="flex-grow p-4 overflow-auto">
+          <div className="flex flex-row justify-between mb-4">
+            <p className="text-gray-500 text-sm">
               Created:{' '}
               {document.createdAt.toLocaleString('en-US', {
                 year: 'numeric',
@@ -123,12 +118,12 @@ const DocumentDetails: React.FC = () => {
               })}
             </p>
           </div>
-          <h1 className="text-2xl font-bold">{document.name}</h1>
-          <p>{document.content}</p>
+          <h1 className="text-2xl font-bold mb-4">{document.name}</h1>
+          <div className="whitespace-pre-wrap">{document.content}</div>
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex justify-end p-4">
         {/* Show Save button if in Edit mode */}
         {isEditMode && (
           <button

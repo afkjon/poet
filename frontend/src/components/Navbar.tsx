@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 // Navbar component
 const Navbar: React.FC = () => {
   return (
-    <nav className="bg-gray-800 p-4">
+    <nav className="bg-blue-500 p-4 w-full">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white font-bold text-xl">Poet</div>
         <ul className="flex space-x-4">
@@ -16,11 +16,6 @@ const Navbar: React.FC = () => {
           <li>
             <Link to="/documents" className="text-white hover:text-gray-300">
               Documents
-            </Link>
-          </li>
-          <li>
-            <Link to="/blog" className="text-white hover:text-gray-300">
-              Blog
             </Link>
           </li>
         </ul>
