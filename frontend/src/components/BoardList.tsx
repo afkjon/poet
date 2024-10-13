@@ -56,7 +56,7 @@ const BoardList: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       <div className="flex-none p-4 shadow-md">
-        <h1 className="text-2xl font-bold">Kanban Board</h1>
+        <h1 className="text-2xl font-bold">View All Boards</h1>
         <form onSubmit={createBoard} className="mt-2">
           <input
             type="text"

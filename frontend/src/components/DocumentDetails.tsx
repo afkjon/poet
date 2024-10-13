@@ -4,20 +4,29 @@ import { getDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
 import { useFirebase } from '../providers/FirebaseProvider'
 import { type Document } from '../types/document'
 import { useParams } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa'
+
 // Tiptap Editor Imports 
 import TiptapEditor from './ui/TiptapEditor'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 
-// Get the document id from the URL
+// Save Status type
+const SaveState = {
+  IS_SAVING: 'isSaving',
+  NOT_SAVED: 'notSaved',
+  SAVED: 'saved',
+  ERROR: 'error',
+}
+type DocumentSaveState = (typeof SaveState)[keyof typeof SaveState]
+
 const DocumentDetails: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false)
-  // Get the document id from the URL
+  const [saveState, setSaveState] = useState<DocumentSaveState>(SaveState.NOT_SAVED)
   const { id } = useParams<{ id: string }>()
   const { db } = useFirebase()
+  // Editor Properties
   const EDITOR_FOCUS_DELAY = 100
-
   const extensions = [StarterKit]
 
   // Get the document from the database
@@ -47,7 +56,7 @@ const DocumentDetails: React.FC = () => {
   }
 
   // Save the document
-  const saveDocument = () => {
+  const saveDocument = async () => {
     if (!document) {
       throw new Error('Document not found')
     }
@@ -56,13 +65,14 @@ const DocumentDetails: React.FC = () => {
       throw new Error('Editor not found')
     }
 
+    setSaveState(SaveState.IS_SAVING)
+    const docRef = doc(db, 'documents', id as string)
+    const newContent = editor.getHTML()
     try {
-      const docRef = doc(db, 'documents', id as string)
-      const newContent = editor.getHTML()
-      updateDoc(docRef, { content: newContent, updatedAt: new Date() })
-      toast.success('Document saved')
+      await updateDoc(docRef, { content: newContent, updatedAt: new Date() })
+      setSaveState(SaveState.SAVED)
     } catch (error) {
-      toast.error('Error saving document')
+      setSaveState(SaveState.ERROR)
     }
   }
 
@@ -99,6 +109,9 @@ const DocumentDetails: React.FC = () => {
 
     onUpdate: ({ editor }) => {
       if (document) {
+        if (editor.getHTML() !== document.content) {
+          setSaveState(SaveState.NOT_SAVED)
+        }
         const newContent = editor.getHTML()
         updateDoc(doc(db, 'documents', id as string), {
           content: newContent,
@@ -158,6 +171,7 @@ const DocumentDetails: React.FC = () => {
             </button>
           )}
         </div>
+
         {/* Document Details */}
         <div className="flex flex-col">
           <div className="flex flex-row mx-auto">
@@ -167,6 +181,15 @@ const DocumentDetails: React.FC = () => {
             <p className="text-gray-500 text-sm">
               Last Updated: {formatTimestamp(document.updatedAt)}
             </p>
+            {saveState === SaveState.IS_SAVING && (
+              <FaSpinner className="animate-spin ml-2" />
+            )}
+            {saveState === SaveState.SAVED && (
+              <FaCheck className="text-green-500 ml-2" />
+            )}
+            {saveState === SaveState.ERROR && (
+              <FaTimes className="text-red-500 ml-2" />
+            )}
           </div>
         </div>
       </div>

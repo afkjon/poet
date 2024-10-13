@@ -15,7 +15,7 @@ import {
 } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useAuthStore } from './stores/authStore'
-
+import LandingPage from './components/LandingPage'
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 // Main layout for the app
@@ -45,7 +45,7 @@ export const App: React.FC = () => {
         <Router>
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<BoardList />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/boards" element={<BoardList />} />
               <Route path="/documents" element={<DocumentList />} />
               <Route path="/documents/:id" element={<DocumentDetails />} />

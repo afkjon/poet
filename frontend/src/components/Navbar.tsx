@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 
 // Navbar component
 const Navbar: React.FC = () => {
-  const { user_id, loading, checkAuth, logout } = useAuthStore()
+  const { user_id, isLoading, checkAuth, logout } = useAuthStore()
 
   useEffect(() => {
     checkAuth()
@@ -13,19 +13,23 @@ const Navbar: React.FC = () => {
   return (
     <nav className="bg-blue-500 p-4 w-full">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-white font-bold text-xl">Poet</div>
+        <div className="text-white font-bold text-xl">
+          <Link to="/" className="hover:text-gray-300 no-underline text-inherit">
+            Poet
+          </Link>
+        </div>
         <ul className="flex space-x-4">
-          <li>
-            <Link to="/boards" className="text-white hover:text-gray-300">
-              Boards
-            </Link>
-          </li>
           <li>
             <Link to="/documents" className="text-white hover:text-gray-300">
               Documents
             </Link>
           </li>
-          {loading ? (
+          <li>
+            <Link to="/boards" className="text-white hover:text-gray-300">
+              Boards
+            </Link>
+          </li>
+          {isLoading ? (
             <></>
           ) : user_id ? (
             <li>
