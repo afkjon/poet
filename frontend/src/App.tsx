@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FirebaseProvider } from './providers/FirebaseProvider'
 import './App.css'
 import BoardList from './components/BoardList'
@@ -14,11 +14,16 @@ import {
   Outlet,
 } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { useAuthStore } from './stores/authStore'
 
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 // Main layout for the app
 const Layout = () => {
+  const { checkAuth } = useAuthStore()
+  useEffect(() => {
+    checkAuth()
+  }, [])
   return (
     <>
       <Navbar />
@@ -34,7 +39,6 @@ const Layout = () => {
 // Main App component
 export const App: React.FC = () => {
   const queryProvider = new QueryClient()
-
   return (
     <FirebaseProvider>
       <QueryClientProvider client={queryProvider}>

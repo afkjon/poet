@@ -19,25 +19,38 @@ const RegisterForm: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col items-center justify-center my-10 w-full">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-center justify-center gap-4"
+        className="flex flex-col items-center justify-center gap-4 w-full max-w-md"
       >
-        <input
-          type="text"
-          name="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <h1 className="text-2xl font-bold">Register</h1>
+        <div className="flex flex-col gap-2 w-full">
+          <label htmlFor="email" className="text-sm font-medium">
+            Email
+          </label>
+          <input
+            type="text"
+            name="email"
+            className="border border-gray-300 rounded-md p-2"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-2 w-full">
+          <label htmlFor="password" className="text-sm font-medium">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            className="border border-gray-300 rounded-md p-2"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
         <button type="submit">Register</button>
       </form>
     </div>

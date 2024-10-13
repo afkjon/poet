@@ -1,8 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '../stores/authStore'
 
 // Navbar component
 const Navbar: React.FC = () => {
+  const { user_id, loading, checkAuth, logout } = useAuthStore()
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
   return (
     <nav className="bg-blue-500 p-4 w-full">
       <div className="container mx-auto flex justify-between items-center">
@@ -18,6 +25,32 @@ const Navbar: React.FC = () => {
               Documents
             </Link>
           </li>
+          {loading ? (
+            <></>
+          ) : user_id ? (
+            <li>
+              <Link
+                to="/login"
+                onClick={logout}
+                className="text-white bg-orange-500 hover:bg-orange-800 px-4 py-2 rounded-md"
+              >
+                Logout
+              </Link>
+            </li>
+          ) : (
+            <>
+              <li>
+                <Link to="/login" className="text-white hover:text-gray-300">
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="text-white hover:text-gray-300">
+                  Register
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </nav>

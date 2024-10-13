@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Register Serializer
-
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -26,6 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+# User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -40,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+# Login Serializer
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -50,6 +51,19 @@ class LoginSerializer(serializers.ModelSerializer):
             username=data['email'],
             password=data['password']
         )
+        # If user is None, then the credentials are incorrect
         if user is None:
             raise serializers.ValidationError("Incorrect Credentials")
         return user
+
+# Current User Serializer
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email']
+    
+    def validate(self, data):
+        if self.context['request'].user.is_authenticated:
+            return data
+        else:
+            raise serializers.ValidationError("User is not authenticated")

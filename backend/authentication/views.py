@@ -9,8 +9,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-from django.http import JsonResponse
-
+from django.conf import settings
 # User Registration
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
@@ -22,7 +21,7 @@ class RegisterView(APIView):
             refresh_token = RefreshToken.for_user(user)
 
             response = Response({
-                'email': user.email,
+                'user_id': user.id,
                 'access': str(access_token),
                 'refresh': str(refresh_token)
             }, status=status.HTTP_201_CREATED)
@@ -43,7 +42,7 @@ class RegisterView(APIView):
                 samesite='Lax'
                 )
             return response
-        return JsonResponse(
+        return Response(
             data={
                 'errors': serializer.errors
             }, 
@@ -59,19 +58,24 @@ class LoginView(APIView):
             user = serializer.validated_data
             login(request, user)
             access_token = AccessToken.for_user(user)
+
+            # Add token claims
+            access_token['user_id'] = user.id
             refresh_token = RefreshToken.for_user(user)
 
-            response = JsonResponse({
-                    'email': user.email,
-                    'access': str(access_token),
-                    'refresh': str(refresh_token)
-                    }, status=status.HTTP_200_OK)
+            response = Response({
+                'user_id': user.id,
+                'access': str(access_token),
+                'refresh': str(refresh_token)
+                }, status=status.HTTP_200_OK)
+            
+            # Set payload cookies
             response.set_cookie(
                 key='access',
                 value=str(access_token),
                 httponly=True,
                 secure=True,
-                max_age=60 * 30,  # 30 minutes
+                expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
                 samesite='Lax'
             )
             response.set_cookie(
@@ -79,7 +83,7 @@ class LoginView(APIView):
                 value=str(refresh_token),
                 httponly=True,
                 secure=True,
-                max_age=60 * 60 * 24 * 7,  # 7 days
+                expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
                 samesite='Lax'
             )
             return response
@@ -88,14 +92,14 @@ class LoginView(APIView):
 
 
 # User Logout
-@api_view(['POST'])
 @method_decorator(csrf_exempt, name='dispatch')
-def LogoutView(request):
-    logout(request)
-    response = Response(status=status.HTTP_200_OK)
-    response.delete_cookie('refresh')
-    response.delete_cookie('access')
-    return response
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        response = Response(status=status.HTTP_200_OK)
+        response.delete_cookie('refresh')
+        response.delete_cookie('access')
+        return response
 
 # User Profile
 @api_view(['GET'])
@@ -107,32 +111,58 @@ def ProfileView(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Session Management
-@api_view(['POST'])
 @method_decorator(csrf_exempt, name='dispatch')
-def SessionView(request):
-    pass
+class SessionView(APIView):
+    def post(self, request):
+        pass
 
 # Blacklist Token
-@api_view(['POST'])
 @method_decorator(csrf_exempt, name='dispatch')
-def BlacklistTokenView(request):
-    refresh_token = request.data.get('refresh')
-    if not token:
-        return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        refresh_token = RefreshToken(token)
-    except TokenError as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class BlacklistTokenView(APIView):
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            refresh_token = RefreshToken(refresh_token)
+        except TokenError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    refresh_token.blacklist()
-    return Response(status=status.HTTP_200_OK)
+        refresh_token.blacklist()
+        return Response(status=status.HTTP_200_OK)
 
-# User Profile
-@api_view(['GET'])
+# Get Current User
 @method_decorator(csrf_exempt, name='dispatch')
-@login_required
-def MeView(request):
-    user = request.user
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+class CheckAuthenticatedView(APIView):
+    def get(self, request):
+        token = request.COOKIES.get('access')
+        
+        # Check if token is valid
+        if token:
+            try:
+                return get_token_pair(request)
+            except TokenError:
+                return get_token_pair(request)
+        return Response(
+            {"error": "No token provided"}, 
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+def get_token_pair(request):
+    refresh = RefreshToken(request.COOKIES.get('refresh'))
+    refresh.access_token['user_id'] = refresh.payload.get('user_id')
+
+    response = Response({
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+    })
+    response.set_cookie(
+        key='refresh',
+        value=str(refresh),
+        httponly=True,
+        secure=True,
+        expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+        samesite='Lax'
+    )
+    return response

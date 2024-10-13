@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { userApi } from '../services/userApi'
 import { toast } from 'react-hot-toast'
-import { User } from '../types/user'
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user_id, setUserId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
 
   const login = async (username: string, password: string) => {
     setLoading(true)
     try {
       const userData = await userApi.login(username, password)
-      setUser(userData)
+      setUserId(userData.user_id)
       toast.success('Logged in successfully')
     } catch (error) {
       toast.error('Invalid username or password')
@@ -25,7 +24,7 @@ export const useAuth = () => {
     setLoading(true)
     try {
       await userApi.logout()
-      setUser(null)
+      setUserId(null)
       toast.success('Logged out successfully')
     } catch (error) {
       toast.error('Failed to logout')
@@ -39,7 +38,7 @@ export const useAuth = () => {
     setLoading(true)
     try {
       const userData = await userApi.register(username, password)
-      setUser(userData)
+      setUserId(userData.user_id)
       toast.success('Registered successfully')
     } catch (error) {
       toast.error('Failed to register')
@@ -49,11 +48,11 @@ export const useAuth = () => {
     }
   }
 
-  const getCurrentUser = async () => {
+  const checkAuth = async () => {
     setLoading(true)
     try {
-      const userData = await userApi.getCurrentUser()
-      setUser(userData)
+      const userData = await userApi.checkAuth()
+      setUserId(userData.user_id)
     } catch (error) {
       toast.error('Failed to get current user')
       console.error('Get current user error:', error)
@@ -62,5 +61,5 @@ export const useAuth = () => {
     }
   }
 
-  return { user, loading, login, logout, register, getCurrentUser }
+  return { user_id, loading, login, logout, register, checkAuth }
 }
