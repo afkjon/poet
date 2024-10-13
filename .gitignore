@@ -6,6 +6,9 @@ __pycache__
 media
 .venv
 
+# Google Cloud
+app.yaml
+
 # db
 db.sqlite3
 

@@ -6,7 +6,7 @@ import { type Document } from '../types/document'
 import { useParams } from 'react-router-dom'
 import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa'
 
-// Tiptap Editor Imports 
+// Tiptap Editor Imports
 import TiptapEditor from './ui/TiptapEditor'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -22,7 +22,9 @@ type DocumentSaveState = (typeof SaveState)[keyof typeof SaveState]
 
 const DocumentDetails: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false)
-  const [saveState, setSaveState] = useState<DocumentSaveState>(SaveState.NOT_SAVED)
+  const [saveState, setSaveState] = useState<DocumentSaveState>(
+    SaveState.NOT_SAVED,
+  )
   const { id } = useParams<{ id: string }>()
   const { db } = useFirebase()
   // Editor Properties

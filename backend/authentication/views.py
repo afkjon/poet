@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.utils.decorators import method_decorator
@@ -102,13 +102,13 @@ class LogoutView(APIView):
         return response
 
 # User Profile
-@api_view(['GET'])
-@login_required
+@method_decorator(login_required, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
-def ProfileView(request):
-    user = request.user
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+class ProfileView(APIView):
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Session Management
 @method_decorator(csrf_exempt, name='dispatch')
@@ -166,3 +166,17 @@ def get_token_pair(request):
         samesite='Lax'
     )
     return response
+
+# Get User by ID
+@method_decorator(login_required, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
+class GetUserByIdView(APIView):
+    def get(self, request, user_id):
+        try:
+            user = UserSerializer.get_user_by_id(user_id)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

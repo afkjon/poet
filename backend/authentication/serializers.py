@@ -39,6 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+    
+    @staticmethod
+    def get_user_by_id(user_id):
+        return User.objects.get(id=user_id)
+
 
 # Login Serializer
 class LoginSerializer(serializers.ModelSerializer):

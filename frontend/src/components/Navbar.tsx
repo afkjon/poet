@@ -14,7 +14,10 @@ const Navbar: React.FC = () => {
     <nav className="bg-blue-500 p-4 w-full">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white font-bold text-xl">
-          <Link to="/" className="hover:text-gray-300 no-underline text-inherit">
+          <Link
+            to="/"
+            className="hover:text-gray-300 no-underline text-inherit"
+          >
             Poet
           </Link>
         </div>
@@ -25,10 +28,17 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
           <li>
+            <Link to="/profile" className="text-white hover:text-gray-300">
+              Profile
+            </Link>
+          </li>
+          {/*
+          <li>
             <Link to="/boards" className="text-white hover:text-gray-300">
               Boards
             </Link>
           </li>
+          */}
           {isLoading ? (
             <></>
           ) : user_id ? (

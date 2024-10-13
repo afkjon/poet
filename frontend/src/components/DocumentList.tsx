@@ -95,10 +95,7 @@ const DocumentList: React.FC = () => {
                 <h2 className="text-xl font-semibold">{document.name}</h2>
               </Link>
               <p className="text-sm text-gray-500">
-                Created: {document.createdAt.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-500">
-                Updated: {document.updatedAt.toLocaleString()}
+                Last Modified: {document.updatedAt.toLocaleString()}
               </p>
             </li>
           ))}
