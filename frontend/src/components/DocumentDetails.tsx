@@ -1,20 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getDoc, doc, updateDoc } from 'firebase/firestore'
+import { getDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
 import { useFirebase } from '../providers/FirebaseProvider'
 import { type Document } from '../types/document'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
-import { useEditor, EditorContent } from '@tiptap/react'
+// Tiptap Editor Imports 
+import TiptapEditor from './ui/TiptapEditor'
+import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 
 // Get the document id from the URL
 const DocumentDetails: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false)
-  const [content, setContent] = useState<string>('')
   // Get the document id from the URL
   const { id } = useParams<{ id: string }>()
   const { db } = useFirebase()
+  const EDITOR_FOCUS_DELAY = 100
+
+  const extensions = [StarterKit]
 
   // Get the document from the database
   const {
@@ -30,27 +34,7 @@ const DocumentDetails: React.FC = () => {
       return snapshot.data() as Document
     },
     refetchInterval: false,
-    onSuccess: (data) => {
-      setContent(data.content)
-    },
   })
-
-  // Initialize Tiptap Editor
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: content,
-  })
-
-  // Update the document in the database
-  /*
-  const updateDocument = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (document) {
-      const docRef = doc(db, 'documents', document.id)
-      updateDoc(docRef, { content: document.content })
-    }
-  }
-  */
 
   // Toggle Edit mode
   const toggleEditMode = async () => {
@@ -58,8 +42,7 @@ const DocumentDetails: React.FC = () => {
     const docRef = doc(db, 'documents', id as string)
     const docSnap = await getDoc(docRef)
     if (docSnap.exists()) {
-      setIsEditMode(!isEditMode)
-      setContent(docSnap.data().content)
+      setIsEditMode(true)
     }
   }
 
@@ -69,81 +52,137 @@ const DocumentDetails: React.FC = () => {
       throw new Error('Document not found')
     }
 
+    if (!editor) {
+      throw new Error('Editor not found')
+    }
+
     try {
       const docRef = doc(db, 'documents', id as string)
-      updateDoc(docRef, { content: content, updatedAt: new Date() })
-      setIsEditMode(false)
-      setContent(document.content)
+      const newContent = editor.getHTML()
+      updateDoc(docRef, { content: newContent, updatedAt: new Date() })
       toast.success('Document saved')
     } catch (error) {
       toast.error('Error saving document')
     }
   }
 
+  // Handle the blur event
+  const handleBlur = () => {
+    saveDocument()
+  }
+
+  // Handle the save event
+  const handleSave = () => {
+    saveDocument()
+    setIsEditMode(false)
+  }
+
+  // Handle the edit event
+  const handleEdit = () => {
+    toggleEditMode()
+    if (document?.content == '<p></p>') {
+      editor?.commands.setContent('')
+    }
+
+    setTimeout(() => {
+      editor?.commands.focus('end')
+    }, EDITOR_FOCUS_DELAY)
+  }
+
+  // Create the tiptap editor
+  const editor = useEditor({
+    extensions: extensions,
+    content: document?.content || '',
+    onBlur: handleBlur,
+    editable: isEditMode,
+    autofocus: true,
+
+    onUpdate: ({ editor }) => {
+      if (document) {
+        const newContent = editor.getHTML()
+        updateDoc(doc(db, 'documents', id as string), {
+          content: newContent,
+          updatedAt: new Date(),
+        })
+      }
+    },
+  })
+
+  // Set the content of the editor
+  useEffect(() => {
+    if (document) {
+      editor?.commands.setContent(document.content)
+    }
+  }, [document, editor])
+
+  // Format the timestamp to a readable date string
+  const formatTimestamp = (timestamp: Timestamp) => {
+    if (!timestamp || typeof timestamp.toDate !== 'function') return ''
+    return timestamp.toDate().toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short',
+    })
+  }
+
+  // Show loading message
   if (isLoading) return <div>Loading...</div>
+  // Show error message
   if (error || !document) return <div>Error loading document</div>
 
   return (
-    <div className="flex flex-col h-screen">
-      {isEditMode ? (
-        <div className="flex-grow p-4">
-          {/* Tiptap Editor */}
-          <EditorContent
-            editor={editor}
-            onBlur={saveDocument}
-            className="w-full h-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+    <>
+      <div className="flex flex-col">
+        {/* Save and Edit buttons */}
+        <div className="flex flex-row justify-start p-4">
+          {/* Show Save button if in Edit mode */}
+          {isEditMode && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              onClick={handleSave}
+            >
+              Save
+            </button>
+          )}
+          {/* Show Edit button if not in Edit mode */}
+          {!isEditMode && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              onClick={handleEdit}
+            >
+              Edit
+            </button>
+          )}
         </div>
-      ) : (
-        <div className="flex-grow p-4 overflow-auto">
-          <div className="flex flex-row justify-between mb-4">
+        {/* Document Details */}
+        <div className="flex flex-col">
+          <div className="flex flex-row mx-auto">
+            <h1 className="text-2xl font-bold m-2">{document.name}</h1>
+          </div>
+          <div className="flex flex-row mx-auto m-2">
             <p className="text-gray-500 text-sm">
-              Created:{' '}
-              {document.createdAt.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </p>
-            <p className="text-gray-500 text-sm">
-              Updated:{' '}
-              {document.updatedAt.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              Last Updated: {formatTimestamp(document.updatedAt)}
             </p>
           </div>
-          <h1 className="text-2xl font-bold mb-4">{document.name}</h1>
-          <div className="whitespace-pre-wrap">{document.content}</div>
         </div>
-      )}
-
-      <div className="flex justify-end p-4">
-        {/* Show Save button if in Edit mode */}
-        {isEditMode && (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            onClick={saveDocument}
-          >
-            Save
-          </button>
-        )}
-        {/* Show Edit button if not in Edit mode */}
-        {!isEditMode && (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            onClick={toggleEditMode}
-          >
-            Edit
-          </button>
+      </div>
+      {/* Tiptap Editor */}
+      <div className="overflow-auto text-left bg-stone-900">
+        {editor && (
+          <TiptapEditor
+            editor={editor}
+            className="text-white h-[calc(100vh-400px)] 
+              prose-stone prose-p:text-left prose-headings:text-left max-w-8xl
+              my-8 mx-12 max-h-screen max-y-screen
+              blinking-cursor"
+          />
         )}
       </div>
-    </div>
+    </>
   )
 }
 

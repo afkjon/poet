@@ -6,7 +6,7 @@ import { Board, Column } from '../types/board'
 //import useBoardStore from '../stores/boardStore';
 
 const BoardList: React.FC = () => {
-  //const { localboards, addLocalBoard } = useBoardStore();
+  //const { localBoards, addLocalBoard } = useBoardStore()
   const [boardName, setBoardName] = useState('')
   const queryClient = useQueryClient()
   const { db } = useFirebase()

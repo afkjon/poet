@@ -10,7 +10,6 @@ type LoginResponse = { access: string; refresh: string }
 type RegisterResponse = { access: string; refresh: string }
 type GetCurrentUserResponse = { access: string; refresh: string }
 
-
 export const userApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
@@ -61,10 +60,9 @@ export const userApi = {
   },
   checkAuth: async (): Promise<GetCurrentUserResponse> => {
     try {
-      const response = await apiClient.get(
-        '/auth/me/',
-        { withCredentials: true },
-      )
+      const response = await apiClient.get('/auth/me/', {
+        withCredentials: true,
+      })
       if (response.status === 200) {
         return {
           access: response.data.access,
