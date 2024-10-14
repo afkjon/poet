@@ -8,7 +8,11 @@ class User(AbstractUser):
     location = models.CharField(max_length=30, blank=True, null=True)
 
     def __str__(self):
-        return self.email
+        return {
+            'id': self.id,
+            'email': self.email,
+            'username': self.username
+        }
     
     groups = models.ManyToManyField(
         'auth.Group', 

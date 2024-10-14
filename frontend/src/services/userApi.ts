@@ -12,6 +12,7 @@ const RegisterResponseSchema = LoginResponseSchema
 const GetCurrentUserResponseSchema = LoginResponseSchema
 const GetUserResponseSchema = z.object({
   id: z.number(),
+  username: z.string().optional(),
   email: z.string(),
 })
 

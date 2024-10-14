@@ -19,6 +19,8 @@ import LandingPage from './components/LandingPage'
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 import UserProfile from './components/UserProfile'
+import Post from './components/ui/Post'
+
 // Main layout for the app
 const Layout = () => {
   const { checkAuth } = useAuthStore()
@@ -53,6 +55,7 @@ export const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/profile" element={<UserProfile />} />
+              <Route path="/post" element={<Post />} />
               <Route path="*" element={<div>Not found</div>} />
             </Route>
           </Routes>

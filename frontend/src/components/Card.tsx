@@ -1,17 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
-import { useFirebase } from '../providers/FirebaseProvider'
 import { type Document } from '../types/document'
 import { useParams } from 'react-router-dom'
 import { FaCheck, FaTimes } from 'react-icons/fa'
 import Loading from './ui/Loading'
-
-// Tiptap Editor Imports
+import { useEditorStore } from '../stores/editorStore'
 import TiptapEditor from './ui/TiptapEditor'
-import { useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-
 // Save Status type
 const SaveState = {
   IS_SAVING: 'isSaving',
@@ -28,41 +23,14 @@ const DocumentDetails: React.FC = () => {
     SaveState.NOT_SAVED,
   )
   const { id } = useParams<{ id: string }>()
-  const { db } = useFirebase()
-
-  // Editor Properties
-  const extensions =  [
-    StarterKit.configure({
-      bulletList: {
-        keepMarks: true,
-        keepAttributes: false, 
-      },
-      orderedList: {
-        keepMarks: true,
-        keepAttributes: false, 
-      },
-    }),
-  ]
+  const { content, setDocumentId, saveContent, editor, isLoading, error, lastSaved } = useEditorStore()
 
   // Get the document from the database
-  const {
-    data: document,
-    isLoading,
-    error,
-  } = useQuery<Document>({
-    queryKey: ['document', id],
-    queryFn: async () => {
-      const docRef = doc(db, 'documents', id as string)
-      const snapshot = await getDoc(docRef)
-
-      return snapshot.data() as Document
-    },
-    refetchInterval: false,
-    onSuccess: (data) => {
-      setDocumentName(data?.name || '')
-      editor?.commands.setContent(data?.content || '')
-    },
-  })
+  useEffect(() => {
+    if (id) {
+      setDocumentId(id)
+    }
+  }, [])
 
   // Save the document
   const saveDocument = async () => {
@@ -75,47 +43,15 @@ const DocumentDetails: React.FC = () => {
     }
 
     setSaveState(SaveState.IS_SAVING)
-    const docRef = doc(db, 'documents', id as string)
     const newContent = editor.getHTML()
     try {
-      await updateDoc(docRef, {
-        name: documentName,
-        content: newContent,
-        updatedAt: new Date(),
-      })
+      await saveContent()
       setSaveState(SaveState.SAVED)
     } catch (error) {
       setSaveState(SaveState.ERROR)
     }
   }
-
-  // Handle the blur event
-  const handleBlur = () => {
-    saveDocument()
-  }
-
-  // Create the tiptap editor
-  const editor = useEditor({
-    extensions: extensions,
-    content: document?.content || '',
-    onBlur: handleBlur,
-    editable: isEditMode,
-    autofocus: true,
-
-    onUpdate: ({ editor }) => {
-      if (document) {
-        if (editor.getHTML() !== document.content) {
-          setSaveState(SaveState.NOT_SAVED)
-        }
-        const newContent = editor.getHTML()
-        updateDoc(doc(db, 'documents', id as string), {
-          name: documentName,
-          content: newContent,
-          updatedAt: new Date(),
-        })
-      }
-    },
-  })
+  
 
   // Format the timestamp to a readable date string
   const formatTimestamp = (timestamp: Timestamp) => {
@@ -150,7 +86,7 @@ const DocumentDetails: React.FC = () => {
                 className="text-2xl w-full font-bold m-2 p-2 
                   border-none shadow-md rounded-md focus:outline-none 
                   bg-stone-650 text-center"
-                onBlur={handleBlur}
+                onBlur={saveDocument}
               />
             ) : (
               <h1 className="text-2xl font-bold m-2 w-full">{documentName}</h1>
@@ -158,7 +94,7 @@ const DocumentDetails: React.FC = () => {
           </div>
           <div className="flex flex-row mx-auto m-2">
             <p className="text-gray-500 text-sm">
-              Last Updated: {formatTimestamp(document.updatedAt)}
+              Last Updated: {formatTimestamp(lastSaved || Timestamp.now())}
             </p>
             {saveState === SaveState.IS_SAVING && (
               <Loading />

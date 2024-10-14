@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
+import Loading from './ui/Loading'
 
 // Navbar component
 const Navbar: React.FC = () => {
@@ -40,7 +41,7 @@ const Navbar: React.FC = () => {
           </li>
           */}
           {isLoading ? (
-            <></>
+            <Loading />
           ) : user_id ? (
             <li>
               <Link

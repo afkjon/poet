@@ -3,8 +3,8 @@ import { useAuthStore } from '../stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { userApi } from '../services/userApi'
 import { type GetUserResponse } from '../services/userApi'
-
-
+import { toast } from 'react-hot-toast'
+import Loading from './ui/Loading'
 const UserProfile: React.FC = () => {
   const [user, setUser] = useState<GetUserResponse | null>(null)
   const { hasSession, user_id, isLoading, checkAuth } = useAuthStore()
@@ -12,29 +12,31 @@ const UserProfile: React.FC = () => {
 
   if (!hasSession) {
     navigate('/login')
-    return <></>
+    return <Loading />
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <Loading />
   }
 
+  // Render once user is loaded
   useEffect(() => {
     checkAuth().then(() => {
       if (user_id) {
         userApi.getUser(user_id).then((res) => {
-        setUser(res)
-      }).catch((err) => {
-        console.log(err)
-      })
+          setUser(res)
+        }).catch((err) => {
+          toast.error('Failed to fetch user')
+        })
       }
     })
   }, [])
 
   return (
     <div>
-      <h1>{user_id} Profile</h1>
+      <h1>Profile</h1>
       <div>User Profile</div>
+      <div>{user?.username}</div>
       <div>Email: {user?.email}</div>
     </div>
   )

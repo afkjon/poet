@@ -42,7 +42,15 @@ class UserSerializer(serializers.ModelSerializer):
     
     @staticmethod
     def get_user_by_id(user_id):
-        return User.objects.get(id=user_id)
+        try:
+            user = User.objects.get(id=user_id)
+            return {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username
+            }
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User does not exist")
 
 
 # Login Serializer
